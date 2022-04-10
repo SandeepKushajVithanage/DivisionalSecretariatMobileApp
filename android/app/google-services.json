@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "930030971251",
+    "project_id": "divisionalsecretariatauth",
+    "storage_bucket": "divisionalsecretariatauth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:930030971251:android:55373eb60e8248ea3a7d06",
+        "android_client_info": {
+          "package_name": "com.mobileapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "930030971251-1p091sujqjdgk4p572qtdp6c02ot9erc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mobileapp",
+            "certificate_hash": "153b79196f65c796acc64aa9f890b27996c8c8d2"
+          }
+        },
+        {
+          "client_id": "930030971251-poooah22anc0j0ui6jtrmu6cqtnt78b1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2kyMcoPLNxXligxijJMOdcDH_vgAF1rI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "930030971251-poooah22anc0j0ui6jtrmu6cqtnt78b1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
