@@ -9,10 +9,13 @@ import { Colors, Screens } from '../../constants'
 import Avatar from '../common/Avatar'
 import { DrawerItem } from '..'
 import showToastMessage from '../../utils/showToastMessage'
+import { useNavigation } from '@react-navigation/native'
 
 const DrawerContent = props => {
 
     const user = useSelector(state => state.auth.user)
+
+    const navigation = useNavigation()
 
     const onSignOut = () => {
         auth()
@@ -22,21 +25,25 @@ const DrawerContent = props => {
             })
     }
 
+    const onPressProfile = () => {
+        navigation.navigate(Screens.USER_PROFILE)
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.profilePictureContainer}>
                     <Avatar style={styles.profilePicture} />
                 </View>
-                <View style={styles.profileDetailsContainer}>
+                <TouchableOpacity style={styles.profileDetailsContainer} onPress={onPressProfile}>
                     <Text style={styles.displayName}>{user?.displayName}</Text>
                     <Text style={styles.email}>{user?.email}</Text>
-                </View>
+                </TouchableOpacity>
             </View>
             <DrawerContentScrollView style={styles.section}>
                 <DrawerItem name={'Home'} screen={Screens.HOME_SCREEN} />
                 <DrawerItem name={'News Feed'} screen={Screens.NEWS_FEED} />
-                <DrawerItem name={'Create News'} screen={Screens.CREATE_NEWS} />
+                {/* <DrawerItem name={'Create News'} screen={Screens.CREATE_NEWS} /> */}
                 <DrawerItem name={'All Messages'} screen={Screens.ALL_MESSAGES} />
                 <DrawerItem name={'Settings'} screen={Screens.SETTINGS} />
                 <DrawerItem name={'About Us'} screen={Screens.SETTINGS} />

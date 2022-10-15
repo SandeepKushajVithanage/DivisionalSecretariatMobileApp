@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
 import { GiftedChat, InputToolbar, Bubble, Composer, Send } from 'react-native-gifted-chat'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
@@ -14,17 +14,33 @@ import { Colors } from '../../../constants'
 import { wp } from '../../../utils/screenResponsiveFunctions'
 import showToastMessage from '../../../utils/showToastMessage'
 import { requestPermissions } from '../../../utils/requestPermissions'
+import { useNavigation } from '@react-navigation/native'
+import { useDispatch, useSelector } from 'react-redux'
+import { addMessage } from '../../../redux/actions/socketActions'
 
-const ChatHeader = () => {
+const ChatHeader = ({ title, image, phoneNumber }) => {
+
+  const navigation = useNavigation()
+
+  const onBackPress = () => {
+    navigation.goBack()
+  }
+
+  const onCallPress = () => {
+    if (phoneNumber?.trim()) Linking.openURL(`tel:${phoneNumber}`)
+    else showToastMessage(`${title} has not updated the phone number yet.`)
+  }
+
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={onBackPress}>
         <AntDesign name={'arrowleft'} size={25} color={'#FFF'} />
       </TouchableOpacity>
-      <Image source={{ uri: PROFILE_PIC }} style={{ width: 36, height: 36, borderRadius: 18, marginLeft: 10 }} />
-      <Text style={{ color: '#FFF', fontSize: 16, fontWeight: 'bold', marginLeft: 15, }}>Sandeep Vithanage</Text>
-      <TouchableOpacity style={{ marginLeft: 'auto' }} >
-        <Entypo name={'dots-three-vertical'} size={20} color={'#FFF'} />
+      <Image source={{ uri: image }} style={{ width: 36, height: 36, borderRadius: 18, marginLeft: 10 }} />
+      <Text style={{ color: '#FFF', fontSize: 16, fontWeight: 'bold', marginLeft: 15, }}>{title}</Text>
+      <TouchableOpacity style={{ marginLeft: 'auto', marginRight: 5, marginTop: 5 }} onPress={onCallPress} >
+      {/* transform: [{ rotate: "180deg" }] */}
+        <Ionicons name={'ios-call-sharp'} size={20} color={'#FFF'} />
       </TouchableOpacity>
     </View>
   )
@@ -32,24 +48,29 @@ const ChatHeader = () => {
 
 const PrivateChat = props => {
 
-  const [isTyping, setIsTyping] = useState(false)
-  const [messages, setMessages] = useState([])
+  const user = props.route.params?.item
+  const me = useSelector(state => state.auth.user)
+
+  console.log('user', user)
+
+  const { socket, messages } = useSelector(state => state.socket)
+
+  const dispatch = useDispatch()
+
+  const [isTyping, setIsTyping] = useState(true)
+
+  // const messages = allMessages.filter(item => (item.user._id === user._id || item.reciever === user._id))
+
+  const initializeMessages = async () => {
+    socket.emit('INITIALIZE_CHAT', { myId: me._id, userId: user._id })
+  }
 
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'Hello developer',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-        audio: 'storage/emulated/0/Download/Oba-Apple-Malak-Wage-Amarasiri-Peiris.mp3',
-      },
-    ])
-  }, [])
+    const subscribe = props.navigation.addListener('focus', () => {
+      initializeMessages()
+    })
+    return subscribe
+  }, [props.navigation])
 
   const onMicPress = async () => {
     const permisson = await requestPermissions()
@@ -58,17 +79,35 @@ const PrivateChat = props => {
 
     // RNVoiceRecorder.Record({
     //   onDone: (path) => {
-    //     console.log(path)
+
     //   },
     //   onCancel: () => {
-    //     console.log('Cancelled')
+
     //   }
     // })
   }
 
-  const onSend = useCallback((messages = []) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-  }, [])
+  // const setMessageList = useCallback((messages = []) => {
+
+  //   setMessages(previousMessages => GiftedChat.append([], messages))
+  //   setMessages(messages)
+  // }, [])
+
+  const onSend = messages => {
+    const newMessageList = messages.map(item => {
+      const newMessage = {
+        ...item,
+        reciever: user._id,
+      }
+      socket.emit('SEND_MESSAGE', newMessage)
+      return newMessage
+    })
+    dispatch(addMessage(newMessageList))
+  }
+
+  // useEffect(() => {
+  //   setMessages(messages)
+  // }, [messages])
 
   const onLaunchCameraImage = async () => {
     const permisson = await requestPermissions()
@@ -86,7 +125,7 @@ const PrivateChat = props => {
       if (value?.assets) {
 
       } else {
-        console.log('Somethings is wrong', value)
+        console.error('Somethings is wrong', value)
       }
     }
 
@@ -111,7 +150,6 @@ const PrivateChat = props => {
     }
 
     const callback = value => {
-      console.log(value)
       if (value?.assets) {
         const messages = value?.assets?.map(item => ({
           _id: Math.random(),
@@ -125,7 +163,7 @@ const PrivateChat = props => {
         }))
         onSend(messages)
       } else {
-        console.log('Somethings is wrong', value)
+        console.error('Somethings is wrong', value)
       }
     }
 
@@ -296,7 +334,7 @@ const PrivateChat = props => {
           marginHorizontal: 10,
           borderRadius: 20,
           marginBottom: 5,
-          width: '80%',
+          width: wp(100) - 75,
           // height: 45,
         }}
       />
@@ -321,12 +359,12 @@ const PrivateChat = props => {
 
   return (
     <Layout style={styles.container}>
-      <ChatHeader />
+      <ChatHeader title={user?.displayName} image={user?.profilePicture} phoneNumber={user?.phoneNumber} />
       <GiftedChat
         messages={messages}
         onSend={messages => onSend(messages)}
         user={{
-          _id: 1,
+          _id: me._id,
         }}
         isTyping={isTyping}
         placeholder={'Message'}

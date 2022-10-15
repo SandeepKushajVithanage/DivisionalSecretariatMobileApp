@@ -1,7 +1,3 @@
-const authActionTypes = {
-    SET_USER: 'SET_USER',
-}
+import { authActionTypes } from "../reducers/authReducer"
 
 export const setUser = payload => ({ type: authActionTypes.SET_USER, payload })
-
-export default authActionTypes

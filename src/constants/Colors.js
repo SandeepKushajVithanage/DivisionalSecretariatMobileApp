@@ -3,6 +3,7 @@ const Colors = {
     secondaryColor: '#DD7E00',
     primaryBackgroundColor: '#FFFFFF',
     secondaryBackgroundColor: '#000000',
+    grayColor: '#DDDDDD',
 }
 
 export default Colors

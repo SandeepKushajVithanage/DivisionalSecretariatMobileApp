@@ -8,6 +8,9 @@ const Screens = {
     CREATE_NEWS: 'CREATE_NEWS',
     ALL_MESSAGES: 'ALL_MESSAGES',
     SETTINGS: 'SETTINGS',
+    USER_PROFILE: 'USER_PROFILE',
+    MY_AREA: 'MY_AREA',
+    DASHBOARD_SCREENS: 'DASHBOARD_SCREENS',
 }
 
 export default Screens

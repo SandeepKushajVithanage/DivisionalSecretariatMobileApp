@@ -15,9 +15,6 @@ const MainHeader = props => {
 
     const onSignOut = () => {
         navigation.openDrawer()
-        // auth()
-        //     .signOut()
-        //     .then(() => console.log('User signed out!'))
     }
 
     return (
@@ -58,6 +55,6 @@ const styles = StyleSheet.create({
     },
     icon: {
         height: '100%',
-        aspectRatio: 1200 / 1702,
+        aspectRatio: 1,
     }
 })

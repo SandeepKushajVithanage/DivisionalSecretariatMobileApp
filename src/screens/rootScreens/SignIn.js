@@ -6,12 +6,13 @@ import { LoginManager, AccessToken } from 'react-native-fbsdk-next'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import Feather from 'react-native-vector-icons/Feather'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { CustomizableButton, Layout, TextField } from '../../components'
-import { useDispatch } from 'react-redux'
 import { Screens, Images, Colors } from '../../constants'
 import { hp, wp } from '../../utils/screenResponsiveFunctions'
 import showToastMessage from '../../utils/showToastMessage'
+import { setSignInLoader } from '../../redux/actions/loaderActions'
 
 const TITLE = 'Divisional Secretariate Dompe'
 
@@ -25,28 +26,29 @@ const LockIcon = () => <Feather name={'lock'} size={20} color={'grey'} />
 
 const SignIn = props => {
 
+  const dispatch = useDispatch()
+
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
+
+  const loading = useSelector(state => state.loader.signIn)
 
   const onSignIn = () => {
     if (username === '' || password === '') return showToastMessage('username and password cannot be empty')
-    setLoading(true)
+    dispatch(setSignInLoader(true))
     auth()
       .signInWithEmailAndPassword(username, password)
       .then(() => {
-        showToastMessage('signed in')
+        // showToastMessage('signed in')
       })
       .catch(error => {
         if (error.code === 'auth/invalid-email') {
-          console.log('That email address is invalid!')
+          console.error('That email address is invalid!')
         }
         showToastMessage(error?.message)
         console.error(error)
-      })
-      .finally(() => {
-        setLoading(false)
+        dispatch(setSignInLoader(false))
       })
   }
 
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     height: hp(20),
-    aspectRatio: 1200 / 1702,
+    aspectRatio: 1,
   },
   title: {
     fontSize: 30,

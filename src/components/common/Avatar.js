@@ -1,15 +1,23 @@
-import { View, Text, Image, StyleSheet } from 'react-native'
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigation } from '@react-navigation/native'
+import { Screens } from '../../constants'
 
 const Avatar = props => {
 
     const user = useSelector(state => state.auth.user)
 
+    const navigation = useNavigation()
+
+    const onPressProfile = () => {
+        navigation.navigate(Screens.USER_PROFILE)
+    }
+
     return (
-        <View style={[styles.container, props.style]}>
+        <TouchableOpacity style={[styles.container, props.style]} onPress={onPressProfile}>
             <Image source={{ uri: user?.profilePicture }} style={[styles.image, props.imageStyle]} />
-        </View>
+        </TouchableOpacity>
     )
 }
 

@@ -45,11 +45,11 @@ const SignUp = props => {
       })
       .catch(error => {
         if (error.code === 'auth/email-already-in-use') {
-          console.log('That email address is already in use!')
+          console.error('That email address is already in use!')
         }
 
         if (error.code === 'auth/invalid-email') {
-          console.log('That email address is invalid!')
+          console.error('That email address is invalid!')
         }
 
         showToastMessage(error?.message)
@@ -58,10 +58,8 @@ const SignUp = props => {
 
   const onGoogleSignIn = async () => {
     const { idToken } = await GoogleSignin.signIn()
-    // console.log('===================', idToken)
     const googleCredential = auth.GoogleAuthProvider.credential(idToken)
     return auth().signInWithCredential(googleCredential)
-    // return null
   }
 
   const onGoogleButtonPress = () => {
@@ -196,7 +194,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     height: hp(20),
-    aspectRatio: 1200 / 1702,
+    aspectRatio: 1,
   },
   title: {
     fontSize: 30,

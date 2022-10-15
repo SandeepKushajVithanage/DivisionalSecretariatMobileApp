@@ -1,37 +1,75 @@
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import firestore from '@react-native-firebase/firestore'
 
-import { DefaultHeader, Layout } from '../../../components'
+import { DefaultHeader, Layout, SearchHeader } from '../../../components'
 import { Screens } from '../../../constants'
+import { useDispatch, useSelector } from 'react-redux'
+import { getSingleConversation } from '../../../api/chatRequests'
+import useRequestConfig from '../../../hooks/useRequestConfig'
+import { addMessage, setMessages } from '../../../redux/actions/socketActions'
+import showToastMessage from '../../../utils/showToastMessage'
 
 const AllMessages = props => {
+    
+    const dispatch = useDispatch()
+    const { socket, messages, conversations } = useSelector(state => state.socket)
+    const user = useSelector(state => state.auth.user)
+    const config = useRequestConfig()
 
-    const getUsers = async () => {
-        const users = await firestore().collection('Users').get()
-        console.log(users)
+    // const [users, setUsers] = useState([])
+
+    // const initializeMessages = async () => {
+    //     socket.emit('INITIALIZE_MESSAGES', { id: user._id })
+    // }
+
+    // useEffect(() => {
+    //     const subscribe = props.navigation.addListener('focus', () => {
+    //         initializeMessages()
+    //     })
+    //     return subscribe
+    // }, [props.navigation])
+
+    // useEffect(() => {
+    //     const newList = []
+    //     messages.forEach(item => {
+    //         const u = newList.find(el => el._id === item.user._id || el._id === item.reciever._id)
+    //         if (!u) {
+    //             if (user._id !== item.user._id) newList.push(item.user)
+    //             else newList.push(item.reciever)
+    //         }
+    //     })
+    //     setUsers(newList)
+    // }, [messages])
+
+    const initializeChat = id => {
+        dispatch(setMessages({ messages: [], selectedConversation: id }))
+        getSingleConversation(id, config)
+            .then(response => {
+                dispatch(setMessages({ messages: response.data, selectedConversation: id }))
+            }) 
+            .catch(error => {
+                showToastMessage(error.message)
+            })
     }
-
-    useEffect(() => {
-        // getUsers()
-    }, [])
 
     const Chat = ({ item }) => {
 
         const onClick = () => {
-            props.navigation.navigate(Screens.PRIVATE_CHAT)
+            initializeChat(item._id)
+            props.navigation.navigate(Screens.PRIVATE_CHAT, { item })
         }
 
         return (
             <TouchableOpacity onPress={onClick} style={styles.chatContainer}>
-                <Image source={{ uri: PROFILE_PIC }} style={styles.profilePic} />
+                <Image source={{ uri: item.profilePicture }} style={styles.profilePic} />
                 <View style={styles.chatMessageContainer}>
                     <View style={styles.chatNameContainer}>
-                        <Text numberOfLines={1} style={styles.chatName}>{item?.name}</Text>
+                        <Text numberOfLines={1} style={styles.chatName}>{item?.displayName}</Text>
                         <Text numberOfLines={1} style={styles.chatTime}>{item?.time}</Text>
                     </View>
                     <View>
-                    <Text numberOfLines={1} style={styles.chatMessage}>{item?.message}</Text>
+                        <Text numberOfLines={1} style={styles.chatMessage}>{item?.email}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -39,17 +77,18 @@ const AllMessages = props => {
     }
 
     const renderItem = ({ item, index }) => (
-        <Chat item={item} />
+        <Chat item={item.user} />
     )
-    
+
     return (
         <Layout>
             <DefaultHeader title={'Conversations'} />
+            <SearchHeader />
             <FlatList
                 bounces={false}
-                data={CHAT_LIST}
+                data={conversations}
                 renderItem={renderItem}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.user._id}
                 ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
                 showsVerticalScrollIndicator={false}
             />
@@ -65,7 +104,7 @@ const styles = StyleSheet.create({
     },
     chatContainer: {
         flexDirection: 'row',
-        paddingVertical: 10,
+        padding: 10,
     },
     profilePic: {
         width: 50,

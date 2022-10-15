@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     },
     logo: {
         height: hp(35),
-        aspectRatio: 1200 / 1702,
+        aspectRatio: 1,
     },
     loader: {
         width: wp(40),

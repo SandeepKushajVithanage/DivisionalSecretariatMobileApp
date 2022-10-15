@@ -3,7 +3,7 @@ import React from 'react'
 import LinearGradient from 'react-native-linear-gradient'
 
 const Layout = props => (
-    <LinearGradient colors={['rgba(255,206,49, 0.1)', 'rgba(254,244,186,0.1)']} flex={1} style={[styles.container, props.style]}>
+    <LinearGradient colors={['#EEE', '#EEE']} flex={1} style={[styles.container, props.style]}>
         {props.children}
     </LinearGradient>
 )

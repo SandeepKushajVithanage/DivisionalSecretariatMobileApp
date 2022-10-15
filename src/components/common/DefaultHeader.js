@@ -42,7 +42,7 @@ const DefaultHeader = props => {
                 <LeftIcon />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
-                <Text style={styles.title}>{props.title}</Text>
+                <Text numberOfLines={1} style={styles.title}>{props.title}</Text>
             </View>
             <TouchableOpacity onPress={onRightIconPress}>
                 <RightIcon />
