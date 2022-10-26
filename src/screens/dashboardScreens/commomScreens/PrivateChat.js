@@ -1,81 +1,103 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native'
-import React, { useEffect, useState, useCallback } from 'react'
-import { GiftedChat, InputToolbar, Bubble, Composer, Send } from 'react-native-gifted-chat'
-import FontAwesome from 'react-native-vector-icons/FontAwesome'
-import Entypo from 'react-native-vector-icons/Entypo'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-import AntDesign from 'react-native-vector-icons/AntDesign'
-import VideoPlayer from 'react-native-video-player'
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker'
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Linking,
+} from 'react-native';
+import React, {useEffect, useState, useCallback} from 'react';
+import {
+  GiftedChat,
+  InputToolbar,
+  Bubble,
+  Composer,
+  Send,
+} from 'react-native-gifted-chat';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import VideoPlayer from 'react-native-video-player';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 // import { RNVoiceRecorder } from 'react-native-voice-recorder'
 
-import { Layout } from '../../../components'
-import { Colors } from '../../../constants'
-import { wp } from '../../../utils/screenResponsiveFunctions'
-import showToastMessage from '../../../utils/showToastMessage'
-import { requestPermissions } from '../../../utils/requestPermissions'
-import { useNavigation } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
-import { addMessage } from '../../../redux/actions/socketActions'
+import {Layout} from '../../../components';
+import {Colors} from '../../../constants';
+import {wp} from '../../../utils/screenResponsiveFunctions';
+import showToastMessage from '../../../utils/showToastMessage';
+import {requestPermissions} from '../../../utils/requestPermissions';
+import {useNavigation} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
+import {addMessage} from '../../../redux/actions/socketActions';
 
-const ChatHeader = ({ title, image, phoneNumber }) => {
-
-  const navigation = useNavigation()
+const ChatHeader = ({title, image, phoneNumber}) => {
+  const navigation = useNavigation();
 
   const onBackPress = () => {
-    navigation.goBack()
-  }
+    navigation.goBack();
+  };
 
   const onCallPress = () => {
-    if (phoneNumber?.trim()) Linking.openURL(`tel:${phoneNumber}`)
-    else showToastMessage(`${title} has not updated the phone number yet.`)
-  }
+    if (phoneNumber?.trim()) Linking.openURL(`tel:${phoneNumber}`);
+    else showToastMessage(`${title} has not updated the phone number yet.`);
+  };
 
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={onBackPress}>
         <AntDesign name={'arrowleft'} size={25} color={'#FFF'} />
       </TouchableOpacity>
-      <Image source={{ uri: image }} style={{ width: 36, height: 36, borderRadius: 18, marginLeft: 10 }} />
-      <Text style={{ color: '#FFF', fontSize: 16, fontWeight: 'bold', marginLeft: 15, }}>{title}</Text>
-      <TouchableOpacity style={{ marginLeft: 'auto', marginRight: 5, marginTop: 5 }} onPress={onCallPress} >
-      {/* transform: [{ rotate: "180deg" }] */}
+      <Image
+        source={{uri: image}}
+        style={{width: 36, height: 36, borderRadius: 18, marginLeft: 10}}
+      />
+      <Text
+        style={{
+          color: '#FFF',
+          fontSize: 16,
+          fontWeight: 'bold',
+          marginLeft: 15,
+        }}>
+        {title}
+      </Text>
+      <TouchableOpacity
+        style={{marginLeft: 'auto', marginRight: 5, marginTop: 5}}
+        onPress={onCallPress}>
+        {/* transform: [{ rotate: "180deg" }] */}
         <Ionicons name={'ios-call-sharp'} size={20} color={'#FFF'} />
       </TouchableOpacity>
     </View>
-  )
-}
+  );
+};
 
 const PrivateChat = props => {
+  const user = props.route.params?.item;
+  const me = useSelector(state => state.auth.user);
 
-  const user = props.route.params?.item
-  const me = useSelector(state => state.auth.user)
+  const {socket, messages} = useSelector(state => state.socket);
 
-  console.log('user', user)
+  const dispatch = useDispatch();
 
-  const { socket, messages } = useSelector(state => state.socket)
-
-  const dispatch = useDispatch()
-
-  const [isTyping, setIsTyping] = useState(true)
+  const [isTyping, setIsTyping] = useState(true);
 
   // const messages = allMessages.filter(item => (item.user._id === user._id || item.reciever === user._id))
 
   const initializeMessages = async () => {
-    socket.emit('INITIALIZE_CHAT', { myId: me._id, userId: user._id })
-  }
+    socket.emit('INITIALIZE_CHAT', {myId: me._id, userId: user._id});
+  };
 
   useEffect(() => {
     const subscribe = props.navigation.addListener('focus', () => {
-      initializeMessages()
-    })
-    return subscribe
-  }, [props.navigation])
+      initializeMessages();
+    });
+    return subscribe;
+  }, [props.navigation]);
 
   const onMicPress = async () => {
-    const permisson = await requestPermissions()
+    const permisson = await requestPermissions();
 
-    if (permisson !== true) return
+    if (permisson !== true) return;
 
     // RNVoiceRecorder.Record({
     //   onDone: (path) => {
@@ -85,7 +107,7 @@ const PrivateChat = props => {
 
     //   }
     // })
-  }
+  };
 
   // const setMessageList = useCallback((messages = []) => {
 
@@ -98,56 +120,55 @@ const PrivateChat = props => {
       const newMessage = {
         ...item,
         reciever: user._id,
-      }
-      socket.emit('SEND_MESSAGE', newMessage)
-      return newMessage
-    })
-    dispatch(addMessage(newMessageList))
-  }
+      };
+      socket.emit('SEND_MESSAGE', newMessage);
+      return newMessage;
+    });
+    dispatch(addMessage(newMessageList));
+  };
 
   // useEffect(() => {
   //   setMessages(messages)
   // }, [messages])
 
   const onLaunchCameraImage = async () => {
-    const permisson = await requestPermissions()
+    const permisson = await requestPermissions();
 
-    if (permisson !== true) return
+    if (permisson !== true) return;
 
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
       saveToPhotos: true,
       selectionLimit: 0,
-    }
+    };
 
     const callback = value => {
       if (value?.assets) {
-
       } else {
-        console.error('Somethings is wrong', value)
+        console.error('Somethings is wrong', value);
       }
-    }
+    };
 
     try {
-      launchCamera(options, callback)
+      launchCamera(options, callback);
     } catch (error) {
-      console.error(error)
-      showToastMessage(error.message)
+      console.error(error);
+      showToastMessage(error.message);
     }
-  }
+  };
 
   const onLaunchGallery = async () => {
-    const permisson = await requestPermissions()
+    const permisson = await requestPermissions();
 
-    if (permisson !== true) return
+    if (permisson !== true) return;
 
     const options = {
       mediaType: 'photo',
       cameraType: 'back',
       saveToPhotos: true,
       selectionLimit: 0,
-    }
+    };
 
     const callback = value => {
       if (value?.assets) {
@@ -160,74 +181,76 @@ const PrivateChat = props => {
             avatar: 'https://placeimg.com/140/140/any',
           },
           image: item.uri,
-        }))
-        onSend(messages)
+        }));
+        onSend(messages);
       } else {
-        console.error('Somethings is wrong', value)
+        console.error('Somethings is wrong', value);
       }
-    }
+    };
 
     try {
-      launchImageLibrary(options, callback)
+      launchImageLibrary(options, callback);
     } catch (error) {
-      console.error(error)
-      showToastMessage(error.message)
+      console.error(error);
+      showToastMessage(error.message);
     }
-  }
+  };
 
   const scrollToBottomComponent = () => {
     return (
-      <FontAwesome name={'angle-double-down'} size={25} color={Colors.primaryColor} />
-    )
-  }
+      <FontAwesome
+        name={'angle-double-down'}
+        size={25}
+        color={Colors.primaryColor}
+      />
+    );
+  };
 
   const renderMessageAudio = props => {
-    const { currentMessage } = props
+    const {currentMessage} = props;
 
     const onPlay = () => {
       const temp = new Promise((resolve, reject) => {
         // RNVoiceRecorder.Play({
         //   path: currentMessage.audio,
         //   onDone: (path) => {
-
         //   },
         //   onCancel: () => {
-
         //   }
         // })
-      })
-    }
+      });
+    };
     return (
       <TouchableOpacity onPress={onPlay} style={styles.audioPlayBtn}>
         <AntDesign name={'play'} size={25} />
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   const renderMessageVideo = props => {
-
-    const { currentMessage } = props
+    const {currentMessage} = props;
 
     return (
-      <View style={{
-        width: wp(80),
-        height: wp(80) * 2.8 / 5,
-        margin: 5,
-        borderRadius: 10,
-        overflow: 'hidden',
-        backgroundColor: '#000',
-      }}>
+      <View
+        style={{
+          width: wp(80),
+          height: (wp(80) * 2.8) / 5,
+          margin: 5,
+          borderRadius: 10,
+          overflow: 'hidden',
+          backgroundColor: '#000',
+        }}>
         <VideoPlayer
           video={currentMessage.video}
           style={{
             width: '100%',
             height: '100%',
           }}
-          thumbnail={{ uri: 'https://i.picsum.photos/id/866/1600/900.jpg' }}
+          thumbnail={{uri: 'https://i.picsum.photos/id/866/1600/900.jpg'}}
         />
       </View>
-    )
-  }
+    );
+  };
 
   const AudioIcon = () => (
     <TouchableOpacity
@@ -243,27 +266,26 @@ const PrivateChat = props => {
       }}>
       <FontAwesome name={'microphone'} size={20} color={'#FFF'} />
     </TouchableOpacity>
-  )
+  );
 
   const AttachmentIcon = props => {
-
     if (props.text.trim()) {
       return <></>;
     }
 
     return (
-      <TouchableOpacity style={{
-        alignSelf: 'flex-end',
-        marginRight: 15,
-        marginVertical: 12,
-      }}>
+      <TouchableOpacity
+        style={{
+          alignSelf: 'flex-end',
+          marginRight: 15,
+          marginVertical: 12,
+        }}>
         <Entypo name={'attachment'} size={20} color={Colors.primaryColor} />
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   const CameraIconImage = props => {
-
     if (props.text.trim()) {
       return <></>;
     }
@@ -279,18 +301,18 @@ const PrivateChat = props => {
         }}>
         <Entypo name={'camera'} size={20} color={Colors.primaryColor} />
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   renderComposer = props => {
     return (
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{flexDirection: 'row'}}>
         <Composer {...props} />
         <AttachmentIcon {...props} />
         <CameraIconImage {...props} />
       </View>
     );
-  }
+  };
 
   const SendIcon = props => (
     <Send
@@ -298,38 +320,37 @@ const PrivateChat = props => {
       containerStyle={{
         padding: 0,
       }}>
-      <View style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: Colors.primaryColor,
-        width: 45,
-        height: 45,
-        borderRadius: 50,
-        paddingLeft: 5,
-        marginLeft: 10,
-      }}>
+      <View
+        style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: Colors.primaryColor,
+          width: 45,
+          height: 45,
+          borderRadius: 50,
+          paddingLeft: 5,
+          marginLeft: 10,
+        }}>
         <Ionicons name={'md-send-sharp'} size={22} color={'#FFF'} />
       </View>
     </Send>
-  )
+  );
 
   renderSend = props => {
-
     if (!props.text.trim()) {
       return <AudioIcon />;
     }
 
     return <SendIcon {...props} />;
-  }
-
+  };
 
   const customtInputToolbar = props => {
     return (
       <InputToolbar
         {...props}
         containerStyle={{
-          backgroundColor: "#FFF",
-          borderTopColor: "#E8E8E8",
+          backgroundColor: '#FFF',
+          borderTopColor: '#E8E8E8',
           borderTopWidth: 1,
           marginHorizontal: 10,
           borderRadius: 20,
@@ -339,7 +360,7 @@ const PrivateChat = props => {
         }}
       />
     );
-  }
+  };
 
   const renderBubble = props => (
     <Bubble
@@ -350,16 +371,19 @@ const PrivateChat = props => {
         },
         right: {
           backgroundColor: Colors.primaryColor,
-        }
+        },
       }}
-      textStyle={{
-
-      }} />
-  )
+      textStyle={{}}
+    />
+  );
 
   return (
     <Layout style={styles.container}>
-      <ChatHeader title={user?.displayName} image={user?.profilePicture} phoneNumber={user?.phoneNumber} />
+      <ChatHeader
+        title={user?.displayName}
+        image={user?.profilePicture}
+        phoneNumber={user?.phoneNumber}
+      />
       <GiftedChat
         messages={messages}
         onSend={messages => onSend(messages)}
@@ -382,10 +406,10 @@ const PrivateChat = props => {
         scrollToBottomComponent={scrollToBottomComponent}
       />
     </Layout>
-  )
-}
+  );
+};
 
-export default PrivateChat
+export default PrivateChat;
 
 const styles = StyleSheet.create({
   container: {
@@ -402,6 +426,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginTop: 10,
   },
-})
+});
 
-const PROFILE_PIC = 'https://scontent.fcmb1-2.fna.fbcdn.net/v/t1.6435-9/181347224_1985704098244405_6348078292449228458_n.jpg?_nc_cat=102&ccb=1-5&_nc_sid=09cbfe&_nc_ohc=syUGYEsd-VYAX_89PR4&_nc_ht=scontent.fcmb1-2.fna&oh=00_AT9UVtCxhVBuWpCktJNV--Wk5bq4gk2adT2BsI3igvPLrA&oe=6270AA37'
+const PROFILE_PIC =
+  'https://scontent.fcmb1-2.fna.fbcdn.net/v/t1.6435-9/181347224_1985704098244405_6348078292449228458_n.jpg?_nc_cat=102&ccb=1-5&_nc_sid=09cbfe&_nc_ohc=syUGYEsd-VYAX_89PR4&_nc_ht=scontent.fcmb1-2.fna&oh=00_AT9UVtCxhVBuWpCktJNV--Wk5bq4gk2adT2BsI3igvPLrA&oe=6270AA37';
